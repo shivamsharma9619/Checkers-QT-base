@@ -1,5 +1,5 @@
 # Checkers Game
-A simple yet interactive two-player checkers game built using the Qt Framework. This project demonstrates the power of Qt for creating modern, responsive, and visually appealing applications. The game follows the International Draughts rules and features an intuitive drag-and-drop interface for moving pieces.
+A simple yet interactive two-player checkers game built using the Qt Framework. This project demonstrates the power of Qt for creating modern, responsive, and visually appealing applications. The game follows the rules and features an intuitive drag-and-drop interface for moving pieces.
 
 # Features
 1. Two-player gameplay: Play with a friend on the same device.
