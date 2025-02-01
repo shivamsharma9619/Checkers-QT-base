@@ -1,10 +1,10 @@
+// mainwindow.cpp
 #include "mainwindow.h"
-#include <QPushButton>
 #include <QGridLayout>
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle("Checkers by Shivam Sharma");
+    setWindowTitle("10x10 Checkers by Shivam Sharma");
     setFixedSize(480, 480);
 
     QWidget *boardWidget = new QWidget(this);
@@ -12,7 +12,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     QGridLayout *gridLayout = new QGridLayout(boardWidget);
     gridLayout->setSpacing(0);
-
     initializeBoard(gridLayout);
     boardWidget->setLayout(gridLayout);
 }
@@ -34,22 +33,23 @@ QString MainWindow::getPieceStyle(const QString &pieceText) {
 void MainWindow::initializeBoard(QGridLayout *gridLayout) {
     player1Pieces.clear();
     player2Pieces.clear();
+    boardSquares.clear();
 
-    for (int row = 0; row < 8; ++row) {
+    for (int row = 0; row < 10; ++row) {
         QVector<QPushButton*> rowButtons;
-        for (int col = 0; col < 8; ++col) {
+        for (int col = 0; col < 10; ++col) {
             QPushButton *square = new QPushButton(this);
-            square->setFixedSize(60, 60);
+            square->setFixedSize(48, 48);
 
             if ((row + col) % 2 == 0) {
                 square->setStyleSheet("background-color: white;");
             } else {
                 square->setStyleSheet("background-color: black;");
-                if (row < 3) {
+                if (row < 4) {
                     square->setText("P2");
                     player2Pieces.append({row, col});
                     square->setStyleSheet(getPieceStyle("P2"));
-                } else if (row > 4) {
+                } else if (row > 5) {
                     square->setText("P1");
                     player1Pieces.append({row, col});
                     square->setStyleSheet(getPieceStyle("P1"));
@@ -69,7 +69,7 @@ void MainWindow::promoteToKing(int row, int col) {
     if (pieceText == "P1" && row == 0) {
         boardSquares[row][col]->setText("K1");
         boardSquares[row][col]->setStyleSheet(getPieceStyle("K1"));
-    } else if (pieceText == "P2" && row == 7) {
+    } else if (pieceText == "P2" && row == 9) {
         boardSquares[row][col]->setText("K2");
         boardSquares[row][col]->setStyleSheet(getPieceStyle("K2"));
     }
@@ -108,7 +108,7 @@ bool MainWindow::isValidMove(QPair<int, int> from, QPair<int, int> to) {
     QString pieceText = boardSquares[from.first][from.second]->text();
     bool isKing = pieceText.startsWith("K");
 
-    if (to.first < 0 || to.first >= 8 || to.second < 0 || to.second >= 8) return false;
+    if (to.first < 0 || to.first >= 10 || to.second < 0 || to.second >= 10) return false;
     if (boardSquares[to.first][to.second]->text() != "") return false;
 
     if (abs(rowDiff) == 2 && abs(colDiff) == 2) {
@@ -145,7 +145,6 @@ void MainWindow::performJump(QPair<int, int> from, QPair<int, int> to) {
     int jumpedCol = (from.second + to.second) / 2;
     QString jumpedPiece = boardSquares[jumpedRow][jumpedCol]->text();
 
-    // Remove jumped piece from opponent's pieces
     if (!jumpedPiece.isEmpty()) {
         if (jumpedPiece.startsWith("P1") || jumpedPiece.startsWith("K1")) {
             for (int i = 0; i < player1Pieces.size(); ++i) {
@@ -172,7 +171,6 @@ void MainWindow::performJump(QPair<int, int> from, QPair<int, int> to) {
 void MainWindow::movePiece(QPair<int, int> from, QPair<int, int> to) {
     QString pieceText = boardSquares[from.first][from.second]->text();
 
-    // Update player pieces vector
     if (pieceText.startsWith("P1") || pieceText.startsWith("K1")) {
         for (int i = 0; i < player1Pieces.size(); ++i) {
             if (player1Pieces[i] == from) {
@@ -191,10 +189,8 @@ void MainWindow::movePiece(QPair<int, int> from, QPair<int, int> to) {
 
     boardSquares[from.first][from.second]->setText("");
     boardSquares[from.first][from.second]->setStyleSheet("background-color: black;");
-
     boardSquares[to.first][to.second]->setText(pieceText);
     boardSquares[to.first][to.second]->setStyleSheet(getPieceStyle(pieceText));
-
     promoteToKing(to.first, to.second);
 }
 
@@ -202,11 +198,9 @@ void MainWindow::highlightLegalMoves(QPair<int, int> piece) {
     clearHighlightedSquares();
     int row = piece.first;
     int col = piece.second;
-
-    QVector<QPair<int, int>> directions;
     QString pieceText = boardSquares[row][col]->text();
 
-    // Determine possible movement directions
+    QVector<QPair<int, int>> directions;
     if (pieceText.startsWith("P1") || pieceText.startsWith("K1")) {
         directions.append({-1, -1});
         directions.append({-1, 1});
@@ -224,9 +218,7 @@ void MainWindow::highlightLegalMoves(QPair<int, int> piece) {
         }
     }
 
-    // Check all possible moves in each direction
     for (const auto& dir : directions) {
-        // Check regular move
         int newRow = row + dir.first;
         int newCol = col + dir.second;
         if (isValidMove(piece, {newRow, newCol})) {
@@ -234,7 +226,6 @@ void MainWindow::highlightLegalMoves(QPair<int, int> piece) {
             boardSquares[newRow][newCol]->setStyleSheet("background-color: green;");
         }
 
-        // Check jump move
         int jumpRow = row + 2 * dir.first;
         int jumpCol = col + 2 * dir.second;
         if (isValidMove(piece, {jumpRow, jumpCol})) {
@@ -256,11 +247,8 @@ void MainWindow::resetSelection() {
 void MainWindow::clearHighlightedSquares() {
     for (const auto& square : highlightedSquares) {
         QString pieceText = boardSquares[square.first][square.second]->text();
-        if(pieceText.isEmpty()) {
-            boardSquares[square.first][square.second]->setStyleSheet("background-color: black;");
-        } else {
-            boardSquares[square.first][square.second]->setStyleSheet(getPieceStyle(pieceText));
-        }
+        boardSquares[square.first][square.second]->setStyleSheet(
+            pieceText.isEmpty() ? "background-color: black;" : getPieceStyle(pieceText));
     }
     highlightedSquares.clear();
 }
@@ -282,9 +270,8 @@ void MainWindow::declareWin(int player) {
 }
 
 void MainWindow::resetGame() {
-    // Clear existing pieces
-    for (int row = 0; row < 8; ++row) {
-        for (int col = 0; col < 8; ++col) {
+    for (int row = 0; row < 10; ++row) {
+        for (int col = 0; col < 10; ++col) {
             QPushButton* square = boardSquares[row][col];
             square->setText("");
             if ((row + col) % 2 == 0) {
@@ -295,17 +282,16 @@ void MainWindow::resetGame() {
         }
     }
 
-    // Re-initialize pieces
     player1Pieces.clear();
     player2Pieces.clear();
-    for (int row = 0; row < 8; ++row) {
-        for (int col = 0; col < 8; ++col) {
+    for (int row = 0; row < 10; ++row) {
+        for (int col = 0; col < 10; ++col) {
             if ((row + col) % 2 == 1) {
-                if (row < 3) {
+                if (row < 4) {
                     boardSquares[row][col]->setText("P2");
                     player2Pieces.append({row, col});
                     boardSquares[row][col]->setStyleSheet(getPieceStyle("P2"));
-                } else if (row > 4) {
+                } else if (row > 5) {
                     boardSquares[row][col]->setText("P1");
                     player1Pieces.append({row, col});
                     boardSquares[row][col]->setStyleSheet(getPieceStyle("P1"));
