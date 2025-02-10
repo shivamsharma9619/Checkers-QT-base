@@ -1,10 +1,9 @@
-// mainwindow.cpp
 #include "mainwindow.h"
 #include <QGridLayout>
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle("10x10 Checkers by Shivam Sharma");
+    setWindowTitle("Checkers by Shivam Sharma");
     setFixedSize(480, 480);
 
     QWidget *boardWidget = new QWidget(this);
@@ -235,10 +234,32 @@ void MainWindow::highlightLegalMoves(QPair<int, int> piece) {
     }
 }
 
+// void MainWindow::resetSelection() {
+//     if (selectedPiece.first != -1) {
+//         QString pieceText = boardSquares[selectedPiece.first][selectedPiece.second]->text();
+//         boardSquares[selectedPiece.first][selectedPiece.second]->setStyleSheet(getPieceStyle(pieceText));
+//     }
+//     clearHighlightedSquares();
+//     selectedPiece = {-1, -1};
+// }
+
 void MainWindow::resetSelection() {
     if (selectedPiece.first != -1) {
-        QString pieceText = boardSquares[selectedPiece.first][selectedPiece.second]->text();
-        boardSquares[selectedPiece.first][selectedPiece.second]->setStyleSheet(getPieceStyle(pieceText));
+        int row = selectedPiece.first;
+        int col = selectedPiece.second;
+        QPushButton* square = boardSquares[row][col];
+        QString pieceText = square->text();
+
+        if (pieceText.isEmpty()) {
+            // Reset to original board color
+            if ((row + col) % 2 == 0) {
+                square->setStyleSheet("background-color: white;");
+            } else {
+                square->setStyleSheet("background-color: black;");
+            }
+        } else {
+            square->setStyleSheet(getPieceStyle(pieceText));
+        }
     }
     clearHighlightedSquares();
     selectedPiece = {-1, -1};
